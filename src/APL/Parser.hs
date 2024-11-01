@@ -90,14 +90,21 @@ pAtom =
       KvPut <$> (lKeyword "put" *> pAtom) <*> pAtom,
       KvGet <$> (lKeyword "get" *> pAtom)
     ]
+    
+pAtomSuffix :: Parser Exp
+pAtomSuffix = pAtom >>= \base ->
+  choice
+    [ Project base <$> (lString "." *> lInteger),
+      pure base
+    ]
 
 pFExp :: Parser Exp
-pFExp = chain =<< pAtom
+pFExp = chain =<< pAtomSuffix
   where
     chain x =
       choice
         [ do
-            y <- pAtom
+            y <- pAtomSuffix
             chain $ Apply x y,
           pure x
         ]

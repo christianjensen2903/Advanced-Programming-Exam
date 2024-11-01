@@ -67,7 +67,14 @@ eval (Tuple es)
   | otherwise = do
       vs <- mapM eval es
       pure $ ValTuple vs
-eval (Project e i) = undefined
+eval (Project e i) = do
+  v <- eval e
+  case v of
+    ValTuple vs -> 
+      if i < 0 || i >= fromIntegral (length vs)
+        then failure "Tuple index out of bounds"
+        else pure $ vs !! fromIntegral i
+    _ -> failure "Cannot project non-tuple"
 eval (KvPut e1 e2) = undefined
 eval (KvGet e) = undefined
 eval (BothOf e1 e2) = undefined

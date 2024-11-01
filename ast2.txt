@@ -11,6 +11,11 @@ Atom ::= int
        | "put" Atom Atom
        | "get Atom
 
+AtomSuffix' ::= "." int
+              | empty
+
+AtomSuffix ::= Atom AtomSuffix'
+
 FExp' ::= Atom FExp'
         | empty
 

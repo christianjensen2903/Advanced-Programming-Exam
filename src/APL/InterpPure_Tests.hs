@@ -142,6 +142,16 @@ tests =
             (Tuple [CstInt 1]),
           evalTestFail
             "Error inside tuple"
-            (Tuple [CstInt 1, Div (CstInt 2) (CstInt 0)])
+            (Tuple [CstInt 1, Div (CstInt 2) (CstInt 0)]),
+          evalTest
+            "Project"
+            (Project (Tuple [CstInt 1, CstInt 2]) 1)
+            (ValInt 2),
+          evalTestFail
+            "Project (non-tuple)"
+            (Project (CstInt 1) 0),
+          evalTestFail
+            "Project (index out of bounds)"
+            (Project (Tuple [CstInt 1, CstInt 2]) 2)
         ]
     ]
