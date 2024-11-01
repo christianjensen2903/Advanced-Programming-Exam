@@ -63,13 +63,30 @@ pBool =
       const False <$> lKeyword "false"
     ]
 
+pExpList :: Parser Exp
+pExpList = do
+  x <- pExp
+  rest <- chain [x]
+  return $ case rest of
+    [single] -> single      -- If only one element, return it as an expression
+    multiple -> Tuple multiple -- If multiple elements, wrap them in a Tuple
+  where
+    chain xs =
+      choice
+        [ do
+            lString ","
+            y <- pExp
+            chain (xs ++ [y]),
+          pure xs
+        ]
+
 pAtom :: Parser Exp
 pAtom =
   choice
     [ CstInt <$> lInteger,
       CstBool <$> pBool,
       Var <$> lVName,
-      try $ lString "(" *> pExp <* lString ")",
+      try $ lString "(" *> pExpList <* lString ")",
       KvPut <$> (lKeyword "put" *> pAtom) <*> pAtom,
       KvGet <$> (lKeyword "get" *> pAtom)
     ]
