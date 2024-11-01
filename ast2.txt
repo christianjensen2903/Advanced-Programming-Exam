@@ -1,0 +1,41 @@
+ExpListRest ::= "," Exp ExpListRest
+              | empty
+
+ExpList ::= Exp ExpListRest
+          | empty
+
+Atom ::= int
+       | bool
+       | var
+       | "(" ExpList ")"
+       | "put" Atom Atom
+       | "get Atom
+
+FExp' ::= Atom FExp'
+        | empty
+
+FExp ::= Atom FExp'
+
+LExp ::= "if" Exp "then" Exp "else" Exp
+       | "\" var "->" Exp
+       | "let" var "=" Exp "in" Exp
+       | FExp
+
+Exp3' ::= "*" LExp
+        | "/" LExp
+        | empty
+
+Exp3 ::= LExp Exp3'
+
+Exp2' ::= "+" Exp3
+        | "-" Exp3
+        | empty
+
+Exp2 ::= Exp2 Exp2'
+
+Exp1' ::= "==" Exp2
+        | empty
+
+Exp1 ::= Exp2 Exp1'
+
+Exp ::= Exp1
