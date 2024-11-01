@@ -62,3 +62,15 @@ eval (Apply e1 e2) = do
       localEnv (const $ envExtend var arg f_env) $ eval body
     (_, _) ->
       failure "Cannot apply non-function"
+eval (Tuple es)
+  | length es < 2 = failure "Tuple must contain at least 2 elements"
+  | otherwise = do
+      vs <- mapM eval es
+      pure $ ValTuple vs
+eval (Project e i) = undefined
+eval (KvPut e1 e2) = undefined
+eval (KvGet e) = undefined
+eval (BothOf e1 e2) = undefined
+eval (OneOf e1 e2) = undefined
+eval (ForLoop (v, e1) (v', e2) body) = undefined
+eval (WhileLoop (v, e1) e2 body) = undefined
