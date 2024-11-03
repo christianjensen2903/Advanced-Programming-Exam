@@ -3,7 +3,7 @@ module APL.Eval
   )
 where
 
-import APL.AST (Exp (..))
+import APL.AST (Exp (..), VName)
 import APL.Monad
 
 evalIntBinOp :: (Integer -> Integer -> EvalM Integer) -> Exp -> Exp -> EvalM Val
@@ -19,6 +19,23 @@ evalIntBinOp' f e1 e2 =
   evalIntBinOp f' e1 e2
   where
     f' x y = pure $ f x y
+
+
+-- One could just pass i and p as arguments however if they are updated somewhere in should get this.
+forLoop :: VName -> VName -> Integer -> Exp -> EvalM Val
+forLoop p_var i_var n body = do
+  p <- eval (Var p_var)
+  i <- eval (Var i_var)
+  case i of
+    ValInt i' -> loop p i'
+    _ -> failure "Loop index must be an integer"
+  where
+    loop p i
+      | i >= n = pure p
+      | otherwise = do
+          localEnv (envExtend p_var p . envExtend i_var (ValInt i)) $ do
+            p' <- eval body
+            loop p' (i + 1)
 
 eval :: Exp -> EvalM Val
 eval (CstInt x) = pure $ ValInt x
@@ -75,9 +92,36 @@ eval (Project e i) = do
         then failure "Tuple index out of bounds"
         else pure $ vs !! fromIntegral i
     _ -> failure "Cannot project non-tuple"
-eval (KvPut e1 e2) = undefined
-eval (KvGet e) = undefined
+eval (KvPut key_e val_e) = do
+  key <- eval key_e
+  val <- eval val_e
+  evalKvPut key val
+  pure val
+eval (KvGet key_e) = do
+  key <- eval key_e
+  evalKvGet key
 eval (BothOf e1 e2) = undefined
 eval (OneOf e1 e2) = undefined
-eval (ForLoop (v, e1) (v', e2) body) = undefined
-eval (WhileLoop (v, e1) e2 body) = undefined
+
+-- Partly written by ChatGPT
+eval (ForLoop (p_var, e1) (i_var, bound) body) = do
+  v <- eval e1
+  n <- eval bound
+  case n of
+    ValInt n' -> do
+      localEnv (envExtend p_var v . envExtend i_var (ValInt 0)) $
+        forLoop p_var i_var n' body
+    _ -> failure "For loop: non-integer end"
+
+eval (WhileLoop (p_var, e1) cond body) = do
+  p <- eval e1
+  let loop p = do
+        cond' <- localEnv (envExtend p_var p) $ eval cond
+        case cond' of
+          ValBool True -> do
+            p' <- localEnv (envExtend p_var p) $ eval body
+            loop p'  -- Continue with the updated value of p
+          ValBool False -> pure p
+          _ -> failure "While loop: non-boolean condition"
+  loop p
+

@@ -34,7 +34,11 @@ keywords =
     "let",
     "in",
     "put",
-    "get"
+    "get",
+    "loop",
+    "for",
+    "while",
+    "do"
   ]
 
 lVName :: Parser VName
@@ -90,7 +94,7 @@ pAtom =
       KvPut <$> (lKeyword "put" *> pAtom) <*> pAtom,
       KvGet <$> (lKeyword "get" *> pAtom)
     ]
-    
+
 pAtomSuffix :: Parser Exp
 pAtomSuffix = pAtom >>= \base ->
   choice
@@ -109,6 +113,27 @@ pFExp = chain =<< pAtomSuffix
           pure x
         ]
 
+pLoopExp :: Parser Exp
+pLoopExp = do
+  lKeyword "loop"
+  var <- lVName
+  lString "="
+  initExp <- pExp
+  choice
+    [ do
+        lKeyword "for"
+        endVar <- lVName
+        lString "<"
+        endExp <- pExp
+        lKeyword "do"
+        ForLoop (var, initExp) (endVar, endExp) <$> pExp,
+      do
+        lKeyword "while"
+        condition <- pExp
+        lKeyword "do"
+        WhileLoop (var, initExp) condition <$> pExp
+    ]
+
 pLExp :: Parser Exp
 pLExp =
   choice
@@ -123,6 +148,7 @@ pLExp =
         <$> (lKeyword "let" *> lVName)
         <*> (lString "=" *> pExp)
         <*> (lKeyword "in" *> pExp),
+      pLoopExp,
       pFExp
     ]
 

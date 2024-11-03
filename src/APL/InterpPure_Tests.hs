@@ -37,10 +37,7 @@ tests =
         (ValTuple [ValInt 1, ValInt 2]),
       --
       -- Should work after Task B.
-      -- evalTest
-      --   "For loop"
-      --   (ForLoop ("x", CstInt 1) ("i", CstInt 10) (Mul (Var "x") (CstInt 2)))
-      --   (ValInt 1024),
+      
       -- --
       -- -- Should work after task C.
       -- evalTest
@@ -153,5 +150,40 @@ tests =
           evalTestFail
             "Project (index out of bounds)"
             (Project (Tuple [CstInt 1, CstInt 2]) 2)
+        ],
+      testGroup
+        "Loops"
+        [
+          testGroup
+            "For loop"
+            [
+              evalTest
+                "Works"
+                (ForLoop ("x", CstInt 1) ("i", CstInt 10) (Mul (Var "x") (CstInt 2)))
+                (ValInt 1024),
+              evalTestFail
+                "Non-integer end"
+                (ForLoop ("x", CstInt 1) ("i", CstBool True) (Mul (Var "x") (CstInt 2))),
+              evalTestFail
+                "Trying to use variable in bound"
+                (ForLoop ("x", CstInt 1) ("i", Var "x") (Mul (Var "x") (CstInt 2)))
+              -- Would have liked test where it fails inside where it then should have the latest value. But doesn't have try catch.
+            ],
+          testGroup
+            "While loop"
+            [
+              -- Hard to test properly when only equality is supported.
+              evalTest
+                "Works"
+                (WhileLoop ("x", CstInt 1) (Eql (Var "x") (CstInt 1)) (Add (Var "x") (CstInt 1)))
+                (ValInt 2),
+              evalTest
+                "Works 2"
+                (WhileLoop ("x", CstInt 1) (Eql (Var "x") (CstInt 5)) (Add (Var "x") (CstInt 1)))
+                (ValInt 1),
+              evalTestFail
+                "Non-boolean condition"
+                (WhileLoop ("x", CstInt 1) (CstInt 1) (Mul (Var "x") (CstInt 2)))
+            ]
         ]
     ]
