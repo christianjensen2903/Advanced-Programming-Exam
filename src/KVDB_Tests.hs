@@ -35,13 +35,12 @@ tests =
       testCase "Multiple concurrent gets" $ do
         db <- startKVDB
         -- Start two gets that will wait
-        v1 <- forkIO $ do
+        _ <- forkIO $ do
           val <- kvGet db (4 :: Int)
           val @?= (42 :: Int)
-        v2 <- forkIO $ do
+        _ <- forkIO $ do
           val <- kvGet db 4
           val @?= 42
-        -- Let the gets start
         threadDelay 100000
         -- Put the value they're waiting for
         kvPut db 4 42
