@@ -31,6 +31,8 @@ stateInitial = []
 -- * If one is 'Pure', then return that result.
 --
 -- * Otherwise evaluate both one step.
+
+-- Mostly done by Claude
 step :: Env -> State -> EvalM a -> (EvalM a, State)
 step _ s (Pure x) = (Pure x, s)
 step r s (Free (ReadOp k)) = (k r, s)
