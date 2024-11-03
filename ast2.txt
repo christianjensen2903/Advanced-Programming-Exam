@@ -32,19 +32,32 @@ LExp ::= "if" Exp "then" Exp "else" Exp
        | LoopExp
        | FExp
 
-Exp3' ::= "*" LExp
+Exp5' ::= "*" LExp
         | "/" LExp
         | empty
 
-Exp3 ::= LExp Exp3'
+Exp5 ::= LExp Exp5'
 
-Exp2' ::= "+" Exp3
-        | "-" Exp3
+Exp4' ::= "+" Exp5
+        | "-" Exp5
         | empty
 
-Exp2 ::= Exp2 Exp2'
+Exp4 ::= Exp5 Exp4'
 
-Exp1' ::= "==" Exp2
+
+Exp3' ::= "==" Exp4
+        | empty
+
+Exp3 ::= Exp4 Exp3'
+
+
+Exp2' ::= "&&" Exp3
+        | empty
+
+Exp2 ::= Exp3 Exp2'
+
+
+Exp1' ::= "||" Exp2
         | empty
 
 Exp1 ::= Exp2 Exp1'

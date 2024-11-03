@@ -54,7 +54,12 @@ tests =
           parserTest "x*y*z" $ Mul (Mul (Var "x") (Var "y")) (Var "z"),
           parserTest "x/y/z" $ Div (Div (Var "x") (Var "y")) (Var "z"),
           parserTest "x==y==z" $ Eql (Eql (Var "x") (Var "y")) (Var "z"),
-          parserTest "x+y==y+x" $ Eql (Add (Var "x") (Var "y")) (Add (Var "y") (Var "x"))
+          parserTest "x+y==y+x" $ Eql (Add (Var "x") (Var "y")) (Add (Var "y") (Var "x")),
+          parserTest "x+y*z==y*z+x" $ Eql (Add (Var "x") (Mul (Var "y") (Var "z"))) (Add (Mul (Var "y") (Var "z")) (Var "x")),
+          parserTest "x&&y||z" $ OneOf (BothOf (Var "x") (Var "y")) (Var "z"),
+          parserTest "x||y&&z" $ OneOf (Var "x") (BothOf (Var "y") (Var "z")),
+          parserTest "x==y&&z" $ BothOf (Eql (Var "x") (Var "y")) (Var "z"),
+          parserTest "x&&y==z" $ BothOf (Var "x") (Eql (Var "y") (Var "z"))
         ],
       testGroup
         "Conditional expressions"
@@ -161,5 +166,17 @@ tests =
             "Application of Lambdas"
             [ parserTest "(\\x -> x) 1" $ Apply (Lambda "x" (Var "x")) (CstInt 1)
             ]
+        ],
+      testGroup
+        "BothOf"
+        [ parserTest "x && y" $ BothOf (Var "x") (Var "y"),
+          parserTest "x && y && z" $ BothOf (BothOf (Var "x") (Var "y")) (Var "z"),
+          parserTestFail "x &&"
+        ],
+      testGroup
+        "OneOf"
+        [ parserTest "x || y" $ OneOf (Var "x") (Var "y"),
+          parserTest "x || y || z" $ OneOf (OneOf (Var "x") (Var "y")) (Var "z"),
+          parserTestFail "x ||"
         ]
     ]

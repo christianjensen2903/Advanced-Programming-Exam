@@ -152,8 +152,8 @@ pLExp =
       pFExp
     ]
 
-pExp3 :: Parser Exp
-pExp3 = pLExp >>= chain
+pExp5 :: Parser Exp
+pExp5 = pLExp >>= chain
   where
     chain x =
       choice
@@ -168,19 +168,43 @@ pExp3 = pLExp >>= chain
           pure x
         ]
 
+pExp4 :: Parser Exp
+pExp4 = pExp5 >>= chain
+  where
+    chain x =
+      choice
+        [ do
+            lString "+"
+            y <- pExp5
+            chain $ Add x y,
+          do
+            lString "-"
+            y <- pExp5
+            chain $ Sub x y,
+          pure x
+        ]
+
+pExp3 :: Parser Exp
+pExp3 = pExp4 >>= chain
+  where
+    chain x =
+      choice
+        [ do
+            lString "=="
+            y <- pExp4
+            chain $ Eql x y,
+          pure x
+        ]
+
 pExp2 :: Parser Exp
 pExp2 = pExp3 >>= chain
   where
     chain x =
       choice
         [ do
-            lString "+"
+            lString "&&"
             y <- pExp3
-            chain $ Add x y,
-          do
-            lString "-"
-            y <- pExp3
-            chain $ Sub x y,
+            chain $ BothOf x y,
           pure x
         ]
 
@@ -190,9 +214,9 @@ pExp1 = pExp2 >>= chain
     chain x =
       choice
         [ do
-            lString "=="
+            lString "||"
             y <- pExp2
-            chain $ Eql x y,
+            chain $ OneOf x y,
           pure x
         ]
 

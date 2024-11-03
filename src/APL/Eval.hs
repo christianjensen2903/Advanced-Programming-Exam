@@ -100,8 +100,8 @@ eval (KvPut key_e val_e) = do
 eval (KvGet key_e) = do
   key <- eval key_e
   evalKvGet key
-eval (BothOf e1 e2) = undefined
-eval (OneOf e1 e2) = undefined
+eval (BothOf e1 e2) = evalBothOf (eval e1) (eval e2)
+eval (OneOf e1 e2) = evalOneOf (eval e1) (eval e2)
 
 -- Partly written by ChatGPT
 eval (ForLoop (p_var, e1) (i_var, bound) body) = do

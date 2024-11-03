@@ -26,37 +26,6 @@ tests =
   testGroup
     "Pure interpreter"
     [ 
-      -- evalTestFail
-      --   "State (unknown key)"
-      --   (KvGet (CstInt 0)),
-      --
-      -- Should work after task A.
-      evalTest
-        "(e1,e2)"
-        (Tuple [CstInt 1, CstInt 2])
-        (ValTuple [ValInt 1, ValInt 2]),
-      --
-      -- Should work after Task B.
-      
-      -- --
-      -- -- Should work after task C.
-      -- evalTest
-      --   "e1 && e2"
-      --   (BothOf (CstInt 0) (CstInt 1))
-      --   (ValTuple [ValInt 0, ValInt 1]),
-      -- --
-      -- -- Should work after task C.
-      -- evalTest
-      --   "e1 || e2"
-      --   (OneOf (CstInt 0) (CstInt 1))
-      --   (ValInt 0),
-      -- --
-      -- -- Should work after task C.
-      -- evalTest
-      --   "e1 || e2 (first fails)"
-      --   (OneOf (KvGet (CstInt 0)) (CstInt 1))
-      --   (ValInt 1),
-      -- General tests
       testGroup
         "Constants"
         [
@@ -185,5 +154,31 @@ tests =
                 "Non-boolean condition"
                 (WhileLoop ("x", CstInt 1) (CstInt 1) (Mul (Var "x") (CstInt 2)))
             ]
+        ],
+      testGroup
+        "BothOf"
+        [
+          evalTest
+            "e1 && e2"
+            (BothOf (CstInt 0) (CstInt 1))
+            (ValTuple [ValInt 0, ValInt 1]),
+          evalTestFail
+            "Error inside"
+            (BothOf (CstInt 0) (Div (CstInt 1) (CstInt 0)))
+        ],
+      testGroup
+        "OneOf"
+        [
+          evalTest
+            "e1 || e2"
+            (OneOf (CstInt 0) (CstInt 1))
+            (ValInt 0),
+          evalTest
+            "e1 || e2 (first fails)"
+            (OneOf (KvGet (CstInt 0)) (CstInt 1))
+            (ValInt 1),
+          evalTestFail
+            "Both fail"
+            (OneOf (Div (CstInt 1) (CstInt 0)) (Div (CstInt 1) (CstInt 0)))
         ]
     ]
