@@ -34,7 +34,7 @@ forLoop p_var i_var n body = do
       | i >= n = pure p
       | otherwise = do
           localEnv (envExtend p_var p . envExtend i_var (ValInt i)) $ do
-            p' <- eval body
+            p' <- evalStep $ eval body
             loop p' (i + 1)
 
 eval :: Exp -> EvalM Val
@@ -115,13 +115,13 @@ eval (ForLoop (p_var, e1) (i_var, bound) body) = do
 
 eval (WhileLoop (p_var, e1) cond body) = do
   p <- eval e1
-  let loop p = do
-        cond' <- localEnv (envExtend p_var p) $ eval cond
-        case cond' of
-          ValBool True -> do
-            p' <- localEnv (envExtend p_var p) $ eval body
-            loop p'  -- Continue with the updated value of p
-          ValBool False -> pure p
-          _ -> failure "While loop: non-boolean condition"
-  loop p
-
+  localEnv (envExtend p_var p) $ whileLoop p
+  where
+    whileLoop p = do
+      cond' <- eval cond
+      case cond' of
+        ValBool True -> do
+          p' <- localEnv (envExtend p_var p) $ evalStep $ eval body
+          whileLoop p'
+        ValBool False -> pure p
+        _ -> failure "While loop: non-boolean condition"
