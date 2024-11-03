@@ -122,6 +122,6 @@ eval (WhileLoop (p_var, e1) cond body) = do
       case cond' of
         ValBool True -> do
           p' <- localEnv (envExtend p_var p) $ evalStep $ eval body
-          whileLoop p'
+          localEnv (envExtend p_var p') $ whileLoop p'
         ValBool False -> pure p
         _ -> failure "While loop: non-boolean condition"
