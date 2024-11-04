@@ -134,7 +134,10 @@ tests =
                 (ForLoop ("x", CstInt 1) ("i", CstBool True) (Mul (Var "x") (CstInt 2))),
               evalTestFail
                 "Trying to use variable in bound"
-                (ForLoop ("x", CstInt 1) ("i", Var "x") (Mul (Var "x") (CstInt 2)))
+                (ForLoop ("x", CstInt 1) ("i", Var "x") (Mul (Var "x") (CstInt 2))),
+              evalTestFail
+                "Variable lives after loop"
+                (Let "y" (ForLoop ("x", CstInt 1) ("i", CstInt 10) (Mul (Var "x") (CstInt 2))) (Add (Var "y") (Var "x")))
               -- Would have liked test where it fails inside where it then should have the latest value. But doesn't have try catch.
             ],
           testGroup
@@ -151,7 +154,10 @@ tests =
                 (ValInt 1),
               evalTestFail
                 "Non-boolean condition"
-                (WhileLoop ("x", CstInt 1) (CstInt 1) (Mul (Var "x") (CstInt 2)))
+                (WhileLoop ("x", CstInt 1) (CstInt 1) (Mul (Var "x") (CstInt 2))),
+              evalTestFail
+                "Variable lives after loop"
+                (Let "y" (WhileLoop ("x", CstInt 1) (Eql (Var "x") (CstInt 1)) (Add (Var "x") (CstInt 1))) (Add (Var "y") (Var "x")))
             ]
         ],
       testGroup
