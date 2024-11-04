@@ -118,7 +118,15 @@ tests =
             (Project (CstInt 1) 0),
           evalTestFail
             "Project (index out of bounds)"
-            (Project (Tuple [CstInt 1, CstInt 2]) 2)
+            (Project (Tuple [CstInt 1, CstInt 2]) 2),
+          evalTest
+            "Elements are evaluated left to right"
+            (Tuple [Tuple [ 
+                KvPut (CstInt 1) (CstBool False),
+                KvPut (CstInt 1) (CstBool True),
+                KvGet (CstInt 1)
+              ], KvGet (CstInt 1)])
+            (ValTuple [ValTuple [ValBool False, ValBool True, ValBool True], ValBool True])
         ],
       testGroup
         "Loops"
@@ -139,7 +147,6 @@ tests =
               evalTestFail
                 "Variable lives after loop"
                 (Let "y" (ForLoop ("x", CstInt 1) ("i", CstInt 10) (Mul (Var "x") (CstInt 2))) (Add (Var "y") (Var "x")))
-              -- Would have liked test where it fails inside where it then should have the latest value. But doesn't have try catch.
             ],
           testGroup
             "While loop"
